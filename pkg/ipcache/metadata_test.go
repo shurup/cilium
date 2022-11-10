@@ -14,6 +14,7 @@ import (
 
 	"github.com/cilium/cilium/pkg/identity"
 	"github.com/cilium/cilium/pkg/identity/cache"
+	"github.com/cilium/cilium/pkg/ipcache/types"
 	"github.com/cilium/cilium/pkg/labels"
 	"github.com/cilium/cilium/pkg/source"
 	testidentity "github.com/cilium/cilium/pkg/testutils/identity"
@@ -233,6 +234,35 @@ func TestOverrideIdentity(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestUpsertMetadataTunnelPeerAndEncryptKey(t *testing.T) {
+	cancel := setupTest(t)
+	defer cancel()
+
+	ctx := context.Background()
+
+	IPIdentityCache.metadata.upsertLocked(worldPrefix, source.CustomResource, "node-uid",
+		types.TunnelPeer(netip.MustParseAddr("192.168.1.100")),
+		types.EncryptKey(7))
+	remaining, err := IPIdentityCache.InjectLabels(ctx, []netip.Prefix{worldPrefix})
+	assert.NoError(t, err)
+	assert.Len(t, remaining, 0)
+
+	ip, key := IPIdentityCache.getHostIPCache(worldPrefix.String())
+	assert.True(t, net.ParseIP("192.168.1.100").Equal(ip))
+	assert.Equal(t, uint8(7), key)
+
+	IPIdentityCache.metadata.upsertLocked(worldPrefix, source.CustomResource, "node-uid",
+		types.TunnelPeer(netip.MustParseAddr("192.168.1.200")))
+	IPIdentityCache.metadata.remove(worldPrefix, "node-uid", types.EncryptKey(7))
+	remaining, err = IPIdentityCache.InjectLabels(ctx, []netip.Prefix{worldPrefix})
+	assert.NoError(t, err)
+	assert.Len(t, remaining, 0)
+
+	ip, key = IPIdentityCache.getHostIPCache(worldPrefix.String())
+	assert.True(t, net.ParseIP("192.168.1.200").Equal(ip))
+	assert.Equal(t, uint8(0), key)
+}
+
 func setupTest(t *testing.T) (cleanup func()) {
 	t.Helper()
 
@@ -243,6 +273,7 @@ func setupTest(t *testing.T) (cleanup func()) {
 		IdentityAllocator: allocator,
 		PolicyHandler:     &mockUpdater{},
 		DatapathHandler:   &mockTriggerer{},
+		NodeHandler:       &mockNodeHandler{},
 	})
 
 	IPIdentityCache.metadata.upsertLocked(worldPrefix, source.CustomResource, "kube-uid", labels.LabelKubeAPIServer)
