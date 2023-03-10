@@ -80,14 +80,14 @@ function move_local_rules_af()
 	# otherwise local addresses will not be reachable for a short period of
 	# time.
 	$IP rule list | grep 100 | grep "lookup local" || {
-		$IP rule add from all lookup local pref 100
+		$IP rule add from all lookup local pref 100 proto kernel
 	}
 	$IP rule del from all lookup local pref 0 2> /dev/null || true
 
 	# check if the move of the local table move was successful and restore
 	# it otherwise
 	if [ "$($IP rule list | grep "lookup local" | wc -l)" -eq "0" ]; then
-		$IP rule add from all lookup local pref 0
+		$IP rule add from all lookup local pref 0 proto kernel
 		$IP rule del from all lookup local pref 100
 		echo "Error: The kernel does not support moving the local table routing rule"
 		echo "Local routing rules:"
@@ -111,13 +111,13 @@ function setup_proxy_rules()
 {
 	# Any packet from an ingress proxy uses a separate routing table that routes
 	# the packet back to the cilium host device.
-	from_ingress_rulespec="fwmark 0xA00/0xF00 pref 10 lookup $PROXY_RT_TABLE"
+	from_ingress_rulespec="fwmark 0xA00/0xF00 pref 10 lookup $PROXY_RT_TABLE proto kernel"
 
 	# Any packet to an ingress or egress proxy uses a separate routing table
 	# that routes the packet to the loopback device regardless of the destination
 	# address in the packet. For this to work the ctx must have a socket set
 	# (e.g., via TPROXY).
-	to_proxy_rulespec="fwmark 0x200/0xF00 pref 9 lookup $TO_PROXY_RT_TABLE"
+	to_proxy_rulespec="fwmark 0x200/0xF00 pref 9 lookup $TO_PROXY_RT_TABLE proto kernel"
 
 	if [ "$IP4_HOST" != "<nil>" ]; then
 		if [ -n "$(ip -4 rule list)" ]; then
