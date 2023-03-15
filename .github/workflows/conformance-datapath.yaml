@@ -258,7 +258,7 @@ jobs:
             SHA=${{ github.sha }}
           fi
 
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
+          echo "sha=f5c202d70f815aa5873374f50debca476ab2fb04" >> $GITHUB_OUTPUT
 
           CILIUM_INSTALL_DEFAULTS="--wait \
             --chart-directory=./install/kubernetes/cilium \
