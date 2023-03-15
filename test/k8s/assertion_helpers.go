@@ -132,7 +132,12 @@ func RedeployCilium(vm *helpers.Kubectl, ciliumFilename string, options map[stri
 func UninstallCiliumFromManifest(vm *helpers.Kubectl, ciliumFilename string) {
 	By("Removing Cilium installation using generated helm manifest")
 
-	Expect(vm.DeleteAndWait(ciliumFilename, true).GetError()).
+	cmdRes := vm.DeleteAndWait(ciliumFilename, true)
+
+	By("cmdStdout: ", cmdRes.Stdout())
+	By("cmdStderr: ", cmdRes.Stderr())
+
+	Expect(cmdRes.GetError()).
 		To(BeNil(), "Error removing cilium from installed manifest")
 }
 

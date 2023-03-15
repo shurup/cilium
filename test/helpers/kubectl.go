@@ -1077,7 +1077,7 @@ func (kub *Kubectl) GetPodNamesContext(ctx context.Context, namespace string, la
 
 	out := strings.Trim(stdout.String(), "\n")
 	if len(out) == 0 {
-		//Small hack. String split always return an array with an empty string
+		// Small hack. String split always return an array with an empty string
 		return []string{}, nil
 	}
 	return strings.Split(out, " "), nil
@@ -1341,6 +1341,8 @@ func (kub *Kubectl) EnsureNamespaceExists(name string) error {
 	ginkgoext.By("Ensuring the namespace %s exists", name)
 	res := kub.ExecShort(fmt.Sprintf("%s create namespace %s", KubectlCmd, name))
 	if !res.success && !strings.Contains(res.Stderr(), "AlreadyExists") {
+		ginkgoext.By("Ensuring the namespace %s exists: stderr: ", res.Stderr())
+		ginkgoext.By("Ensuring the namespace %s exists: stdout: ", res.Stdout())
 		return res.err
 	}
 	return nil
@@ -3640,7 +3642,7 @@ func (kub *Kubectl) DumpCiliumCommandOutput(ctx context.Context, namespace strin
 					"Cannot untar bugtool output: %s", res.CombineOutput())
 				continue
 			}
-			//Remove bugtool artifact, so it'll be not used if any other fail test
+			// Remove bugtool artifact, so it'll be not used if any other fail test
 			_ = kub.ExecPodCmdBackground(ctx, namespace, pod, "cilium-agent", fmt.Sprintf("rm /tmp/%s", line))
 		}
 
@@ -4704,7 +4706,7 @@ func hasIPAddress(output []string) (bool, string) {
 }
 
 func (kub *Kubectl) ensureKubectlVersion() error {
-	//check current kubectl version
+	// check current kubectl version
 	type Version struct {
 		ClientVersion struct {
 			Major string `json:"major"`
@@ -4730,7 +4732,7 @@ func (kub *Kubectl) ensureKubectlVersion() error {
 	})
 	versionstring := fmt.Sprintf("%s.%s", v.ClientVersion.Major, minor)
 	if versionstring == GetCurrentK8SEnv() {
-		//version available on host is matching current env
+		// version available on host is matching current env
 		return nil
 	}
 

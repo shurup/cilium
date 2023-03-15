@@ -114,6 +114,8 @@ workers() {
   for i in $(seq 1 "${workers}"); do
     echo "- role: worker"
     node_config "1" "$i" "${workers}"
+    echo "  labels:"
+    echo "    cilium.io/ci-node: k8s$i"
   done
 }
 

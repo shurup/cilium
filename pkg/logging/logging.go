@@ -34,7 +34,7 @@ const (
 	DefaultLogFormat LogFormat = LogFormatText
 
 	// DefaultLogLevel is the default log level we want to use for our logrus.Formatter
-	DefaultLogLevel logrus.Level = logrus.InfoLevel
+	DefaultLogLevel logrus.Level = logrus.DebugLevel
 )
 
 // DefaultLogger is the base logrus logger. It is different from the logrus
@@ -44,7 +44,7 @@ var DefaultLogger = InitializeDefaultLogger()
 func initializeKLog() {
 	log := DefaultLogger.WithField(logfields.LogSubsys, "klog")
 
-	//Create a new flag set and set error handler
+	// Create a new flag set and set error handler
 	klogFlags := flag.NewFlagSet("cilium", flag.ExitOnError)
 
 	// Make sure that klog logging variables are initialized so that we can
