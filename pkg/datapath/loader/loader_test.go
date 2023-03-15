@@ -5,7 +5,9 @@ package loader
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -116,22 +118,46 @@ func (s *LoaderTestSuite) TearDownTest(c *C) {
 }
 
 func prepareEnv(ep *testutils.TestEndpoint) (func() error, error) {
-	link := netlink.Dummy{
-		LinkAttrs: netlink.LinkAttrs{
-			Name: ep.InterfaceName(),
-		},
-	}
-	if err := netlink.LinkAdd(&link); err != nil {
-		if !os.IsExist(err) {
-			return nil, fmt.Errorf("Failed to add link: %s", err)
+	var cleanupFn func() error
+
+	if ep.IsHost() {
+		ciliumHost, ciliumNet, err := SetupBaseDevice(1500)
+		if err != nil {
+			return nil, fmt.Errorf("failed to set up datapath base devices: %w", err)
+		}
+		cleanupFn = func() error {
+			var err error
+			if errHost := netlink.LinkDel(ciliumHost); errHost != nil {
+				err = fmt.Errorf("failed to delete %s device: %w", ciliumHost.Attrs().Name, errHost)
+			}
+			if errNet := netlink.LinkDel(ciliumNet); errNet != nil {
+				err = errors.Join(err, fmt.Errorf("failed to delete %s device: %w", ciliumNet.Attrs().Name, errNet))
+			}
+			return err
+		}
+		_, ipnet, _ := net.ParseCIDR("192.0.2.1/32")
+		err = netlink.AddrAdd(ciliumHost, &netlink.Addr{IPNet: ipnet})
+		return cleanupFn, err
+
+	} else {
+		link := netlink.Dummy{
+			LinkAttrs: netlink.LinkAttrs{
+				Name: ep.InterfaceName(),
+			},
+		}
+		if err := netlink.LinkAdd(&link); err != nil {
+			if !os.IsExist(err) {
+				return nil, fmt.Errorf("Failed to add link: %s", err)
+			}
+		}
+		cleanupFn = func() error {
+			if err := netlink.LinkDel(&link); err != nil {
+				return fmt.Errorf("Failed to delete link: %s", err)
+			}
+			return nil
 		}
 	}
-	cleanupFn := func() error {
-		if err := netlink.LinkDel(&link); err != nil {
-			return fmt.Errorf("Failed to delete link: %s", err)
-		}
-		return nil
-	}
+
 	return cleanupFn, nil
 }
 
@@ -175,6 +201,8 @@ func (s *LoaderTestSuite) TestCompileAndLoadHostEndpoint(c *C) {
 	err := os.MkdirAll(epDir, 0755)
 	c.Assert(err, IsNil)
 	defer os.RemoveAll(epDir)
+
+	_, _, err = SetupBaseDevice(1500)
 
 	s.testCompileAndLoad(c, &hostEp)
 }
