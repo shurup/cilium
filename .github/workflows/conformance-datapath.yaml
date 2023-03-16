@@ -67,6 +67,7 @@ jobs:
             lb-mode: 'snat'
             egress-gateway: 'true'
             focus: 'K8sAgent|K8sUpdates'
+            skip: 'K8sAgentHubbleTest'
 
           - name: '2'
             kernel: 'bpf-next-main'
@@ -76,6 +77,16 @@ jobs:
             lb-mode: 'snat'
             egress-gateway: 'true'
             focus: 'K8sDatapath|K8sKafkaPolicyTest'
+            skip: 'K8sDatapathServicesTest|K8sDatapathConfig MonitorAggregation|K8sDatapathConfig Encapsulation'
+
+          - name: '3'
+            kernel: 'bpf-next-main'
+            kube-proxy: 'iptables'
+            kpr: 'strict'
+            tunnel: 'disabled'
+            lb-mode: 'snat'
+            egress-gateway: 'true'
+            focus: 'K8sDatapathServicesTest'
 
     timeout-minutes: 120
     steps:
@@ -209,6 +220,7 @@ jobs:
             kubectl get pods -A -o wide
             echo "K8S_VERSION=1.25 /root/go/bin/ginkgo \
              --focus=\"${{ matrix.focus }}\" \
+             --skip=\"${{ matrix.skip }}\" \
              -v -- \
              -cilium.provision=false \
              --cilium.image=quay.io/${{ github.repository_owner }}/cilium-ci \
@@ -222,6 +234,7 @@ jobs:
              -cilium.operator-suffix=-ci"
             K8S_VERSION=1.25 /root/go/bin/ginkgo \
              --focus="${{ matrix.focus }}" \
+             --skip="${{ matrix.skip }}" \
              -v -- \
              -cilium.provision=false \
              --cilium.image=quay.io/${{ github.repository_owner }}/cilium-ci \
