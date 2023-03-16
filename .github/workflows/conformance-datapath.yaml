@@ -214,7 +214,7 @@ jobs:
           provision: 'false'
           cmd: |
             cd /host/
-            ./contrib/scripts/kind.sh "" 3 "" "" "${{ matrix.kube-proxy }}" "dual"
+            ./contrib/scripts/kind.sh "" 2 "" "" "${{ matrix.kube-proxy }}" "dual"
             cd test/
             kubectl get ns -A -o wide
             kubectl get pods -A -o wide
