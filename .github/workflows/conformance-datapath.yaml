@@ -1,4 +1,4 @@
-name: Cilium Datapath (ci-datapath-test)
+name: Cilium Test (ci-test)
 
 # Any change in triggers needs to be reflected in the concurrency group.
 on:
@@ -51,7 +51,7 @@ env:
 
 jobs:
   setup-and-test:
-    runs-on: ubuntu-latest-4cores-16gb
+    runs-on: ubuntu-latest-8cores-32gb-22.04
     name: Setup & Test
     strategy:
       fail-fast: false
@@ -184,7 +184,7 @@ jobs:
           test-name: datapath-conformance
           image-version: ${{ matrix.kernel }}
           host-mount: ./
-          cpu: 4
+          cpu: 8
           dns-resolver: '1.1.1.1'
           install-dependencies: 'true'
           cmd: |
@@ -204,7 +204,7 @@ jobs:
           provision: 'false'
           cmd: |
             cd /host/
-            sudo apt-get install -y jq
+            sudo apt-get install -y jq wget unzip
             mv ./helm /usr/bin
             go install github.com/onsi/ginkgo/ginkgo@v1.16.5
 
@@ -214,7 +214,7 @@ jobs:
           provision: 'false'
           cmd: |
             cd /host/
-            ./contrib/scripts/kind.sh "" 2 "" "" "${{ matrix.kube-proxy }}" "dual"
+            ./contrib/scripts/kind.sh "" 3 "" "" "${{ matrix.kube-proxy }}" "dual"
             cd test/
             kubectl get ns -A -o wide
             kubectl get pods -A -o wide
