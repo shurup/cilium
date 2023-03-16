@@ -195,7 +195,7 @@ jobs:
         shell: bash
         run: |
           for image in cilium-ci operator-generic-ci hubble-relay-ci ; do
-            until docker manifest inspect quay.io/${{ github.repository_owner }}/$image:f5c202d70f815aa5873374f50debca476ab2fb04 &> /dev/null; do sleep 45s; done
+            until docker manifest inspect quay.io/${{ github.repository_owner }}/$image:de3d4f04973d1363c99cd2ad4467d9ab33c1e259 &> /dev/null; do sleep 45s; done
           done
 
       - name: Install dependencies in little-vm-helper
@@ -224,11 +224,11 @@ jobs:
              -v -- \
              -cilium.provision=false \
              --cilium.image=quay.io/${{ github.repository_owner }}/cilium-ci \
-             -cilium.tag=f5c202d70f815aa5873374f50debca476ab2fb04  \
+             -cilium.tag=de3d4f04973d1363c99cd2ad4467d9ab33c1e259  \
              --cilium.operator-image=quay.io/${{ github.repository_owner }}/operator \
-             -cilium.operator-tag=f5c202d70f815aa5873374f50debca476ab2fb04 \
+             -cilium.operator-tag=de3d4f04973d1363c99cd2ad4467d9ab33c1e259 \
              --cilium.hubble-relay-image=quay.io/${{ github.repository_owner }}/hubble-relay-ci \
-             -cilium.hubble-relay-tag=f5c202d70f815aa5873374f50debca476ab2fb04 \
+             -cilium.hubble-relay-tag=de3d4f04973d1363c99cd2ad4467d9ab33c1e259 \
              -cilium.kubeconfig=/root/.kube/config \
              -cilium.provision-k8s=false \
              -cilium.operator-suffix=-ci"
@@ -238,11 +238,11 @@ jobs:
              -v -- \
              -cilium.provision=false \
              --cilium.image=quay.io/${{ github.repository_owner }}/cilium-ci \
-             -cilium.tag=f5c202d70f815aa5873374f50debca476ab2fb04  \
+             -cilium.tag=de3d4f04973d1363c99cd2ad4467d9ab33c1e259  \
              --cilium.operator-image=quay.io/${{ github.repository_owner }}/operator \
-             -cilium.operator-tag=f5c202d70f815aa5873374f50debca476ab2fb04 \
+             -cilium.operator-tag=de3d4f04973d1363c99cd2ad4467d9ab33c1e259 \
              --cilium.hubble-relay-image=quay.io/${{ github.repository_owner }}/hubble-relay-ci \
-             -cilium.hubble-relay-tag=f5c202d70f815aa5873374f50debca476ab2fb04 \
+             -cilium.hubble-relay-tag=de3d4f04973d1363c99cd2ad4467d9ab33c1e259 \
              -cilium.kubeconfig=/root/.kube/config \
              -cilium.provision-k8s=false \
              -cilium.operator-suffix=-ci
